@@ -1,11 +1,8 @@
 # 全篇唯一不是claude code帮我生成而是我自己写的话
-作为一个对ai感兴趣但又非专业的普通人，ai每一次发展都让我眼前一亮。
-
-按照b站视频学习，安装cursor，让cursor帮我安装cc，让cc帮我下载find-skills，然后用find-skills找到skill-creator，然后创建出第一个自己制作的skill。
-
-接着是让cc帮我上传到github，原来只能逛逛，很多选项不会操作，现在一次性都解决了，也学到了，这样的工作流程让我对未来的ai发展愈发期待。
-
-虽然或许也没什么人会注意到这个skill，只是上传一下留作纪念，祝路过的每个人生活愉快！
+作为一个对ai感兴趣但又非专业的普通人，ai每一次发展都让我眼前一亮。  
+按照b站视频学习，安装cursor，cursor安装cc，cc下载find-skills，find-skills找到skill-creator，然后创建出第一个自己制作的skill。  
+接着是让cc帮我上传到github，原来只能逛逛，很多选项不会操作，现在一次性都解决了，这样的工作流程让我对未来的ai发展愈发期待。  
+虽然或许也没什么人会注意到这个skill，只是上传一下留作纪念，祝路过的每个人生活愉快！  
 
 # 🐱 neko-girl — 猫娘 Skill
 
