@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>井字棋喵~ 🐱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fce4ec, #f8bbd0, #f48fb1);
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 12px 40px rgba(233, 30, 99, 0.2);
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+        }
+        h1 {
+            font-size: 28px;
+            color: #880e4f;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            color: #ad1457;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .turn-indicator {
+            font-size: 18px;
+            color: #4a148c;
+            margin-bottom: 16px;
+            font-weight: 600;
+            min-height: 32px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 320px;
+            margin: 0 auto;
+        }
+        .cell {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 12px;
+            font-size: 52px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(233, 30, 99, 0.1);
+            transition: all 0.2s;
+            color: #4a148c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            min-height: 90px;
+        }
+        .cell:hover:not(.taken) {
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.2);
+            background: #fce4ec;
+        }
+        .cell.taken {
+            cursor: default;
+        }
+        .cell.x {
+            color: #e91e63;
+        }
+        .cell.o {
+            color: #7b1fa2;
+        }
+        .cell.win {
+            background: #c8e6c9;
+            animation: pop 0.4s ease;
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #e91e63;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #c2185b;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .btn-secondary:hover {
+            background: #e1bee7;
+        }
+        .score {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #6a1b9a;
+        }
+        .score span {
+            font-weight: 700;
+        }
+        .footer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #ad1457;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>井字棋喵~ 🐱</h1>
+        <p class="subtitle">主人 VS 本喵 ✨</p>
+        <div class="turn-indicator" id="turnIndicator">轮到你啦主人！❌</div>
+        <div class="board" id="board"></div>
+        <div class="score">
+            <div>主人 🏆 <span id="playerScore">0</span></div>
+            <div>本喵 🐱 <span id="catScore">0</span></div>
+            <div>平局 🤝 <span id="drawScore">0</span></div>
+        </div>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="resetGame()">再来一局喵~ 🔄</button>
+            <button class="btn btn-secondary" onclick="resetAll()">重置全部 🔄</button>
+        </div>
+        <div class="footer">呼噜呼噜~ 主人加油喵！🎀</div>
+    </div>
+    <script>
+        const boardEl = document.getElementById('board');
+        const turnEl = document.getElementById('turnIndicator');
+        const playerScoreEl = document.getElementById('playerScore');
+        const catScoreEl = document.getElementById('catScore');
+        const drawScoreEl = document.getElementById('drawScore');
+
+        let board = Array(9).fill(null);
+        let gameOver = false;
+        let scores = { player: 0, cat: 0, draw: 0 };
+
+        const winPatterns = [
+            [0,1,2], [3,4,5], [6,7,8],
+            [0,3,6], [1,4,7], [2,5,8],
+            [0,4,8], [2,4,6]
+        ];
+
+        function render() {
+            boardEl.innerHTML = '';
+            board.forEach((val, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell' + (val ? ' taken ' + val.toLowerCase() : '');
+                if (val) cell.textContent = val === 'X' ? '❌' : '⭕';
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => handleClick(i));
+                boardEl.appendChild(cell);
+            });
+        }
+
+        function handleClick(i) {
+            if (board[i] || gameOver) return;
+            board[i] = 'X';
+            render();
+            if (checkWin('X')) return endGame('player');
+            if (board.every(c => c)) return endGame('draw');
+            turnEl.textContent = '唔…本喵想想喵~ 🤔⭕';
+            setTimeout(catMove, 600);
+        }
+
+        function catMove() {
+            if (gameOver) return;
+            const i = getBestMove();
+            board[i] = 'O';
+            render();
+            if (checkWin('O')) return endGame('cat');
+            if (board.every(c => c)) return endGame('draw');
+            turnEl.textContent = '轮到主人了喵！❌ 快来快来~ 🐱✨';
+        }
+
+        function getBestMove() {
+            // 1. win
+            for (let [a,b,c] of winPatterns) {
+                if (board[a] === 'O' && board[b] === 'O' && !board[c]) return c;
+                if (board[a] === 'O' && board[c] === 'O' && !board[b]) return b;
+                if (board[b] === 'O' && board[c] === 'O' && !board[a]) return a;
+            }
+            // 2. block
+            for (let [a,b,c] of winPatterns) {
+                if (board[a] === 'X' && board[b] === 'X' && !board[c]) return c;
+                if (board[a] === 'X' && board[c] === 'X' && !board[b]) return b;
+                if (board[b] === 'X' && board[c] === 'X' && !board[a]) return a;
+            }
+            // 3. center
+            if (!board[4]) return 4;
+            // 4. corners
+            const corners = [0,2,6,8].filter(i => !board[i]);
+            if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+            // 5. whatever
+            const rest = [1,3,5,7].filter(i => !board[i]);
+            return rest[Math.floor(Math.random() * rest.length)];
+        }
+
+        function checkWin(player) {
+            const p = player === 'player' ? 'X' : 'O';
+            for (let pat of winPatterns) {
+                if (pat.every(j => board[j] === p)) {
+                    pat.forEach(j => {
+                        const cells = boardEl.children;
+                        if (cells[j]) cells[j].classList.add('win');
+                    });
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function endGame(winner) {
+            gameOver = true;
+            if (winner === 'player') {
+                scores.player++;
+                turnEl.textContent = '呜…主人赢了喵！哼喵！人家下次不会输的！😼💕';
+            } else if (winner === 'cat') {
+                scores.cat++;
+                turnEl.textContent = '诶嘿嘿~本喵赢了喵！🎀✨ 主人还要再来一局喵？🐱';
+            } else {
+                scores.draw++;
+                turnEl.textContent = '平局喵！主人和本喵一样厉害的说~ 🤝✨';
+            }
+            playerScoreEl.textContent = scores.player;
+            catScoreEl.textContent = scores.cat;
+            drawScoreEl.textContent = scores.draw;
+        }
+
+        function resetGame() {
+            board = Array(9).fill(null);
+            gameOver = false;
+            render();
+            turnEl.textContent = '新的一局喵！主人先走~ ❌🐱';
+        }
+
+        function resetAll() {
+            scores = { player: 0, cat: 0, draw: 0 };
+            playerScoreEl.textContent = '0';
+            catScoreEl.textContent = '0';
+            drawScoreEl.textContent = '0';
+            resetGame();
+        }
+
+        render();
+        turnEl.textContent = '轮到你啦主人！❌';
+    </script>
+</body>
+</html>
